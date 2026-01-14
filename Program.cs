@@ -1,0 +1,31 @@
+using Microsoft.EntityFrameworkCore;
+using UserManagementApi.Data;
+using UserManagementApi.Middleware;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// SQLite Database
+builder.Services.AddDbContext<UserDbContext>(options =>
+    options.UseSqlite("Data Source=users.db"));
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<JwtValidationMiddleware>();
+app.UseMiddleware<RequestLoggingMiddleware>();
+
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
+app.Run();
